@@ -10,7 +10,7 @@ n = 2*np.pi/P                          # velocidade angular
 t = np.arange(0,P)                     # tempo de uma órbita em array, tp = 0
 M = n*t[np.random.randint(0,len(t)-1)] # valor aleatório de M(t)
 e = np.random.random()                 # valor aleatório de e em [0,1)
-E = np.linspace(0,10,1000)             # valores de E para verificar soluções graficamente
+E = np.linspace(0,2*np.pi,1000)             # valores de E para verificar soluções graficamente
 print('e = ',e,' ; M = ',M)
 
 ### Solução com Sympy
