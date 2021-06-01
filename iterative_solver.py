@@ -2,7 +2,7 @@
 from numpy import sin
 
 ### Método iterativo
-def iterative_solver(e,M,epsilon=1e-9,iter_counter=True):
+def iterative_solver(e,M,epsilon=1e-9,iter_counter=False):
 	x0 = M                  # initial guess
 	x = M + e*sin(x0)       # primeira iteração
 	counter = 1
