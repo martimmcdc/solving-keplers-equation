@@ -24,7 +24,8 @@ for i in range(3):
 			zeros[i,j,k] = method(e[k],Mj) 
 			times[i,j,k] = time() - start
 
-sympy_solutions = np.loadtxt('sympy_vals_200x200grid.txt',dtype=float)
+### Sympy calculated values to compare with
+sympy_solutions = np.loadtxt('sympy_200x200grid.txt',dtype=float)
 errors = zeros.copy()
 errors = np.abs(sympy_solutions-errors)
 
@@ -34,22 +35,23 @@ elabels= np.round(e[::N//10],1)[1:]
 Mticks = np.linspace(0,N,5)
 Mlabels= ['0','$\\frac{\pi}{4}$','$\\frac{\pi}{2}$','$\\frac{3\pi}{4}$','$\\pi$']
 
-min_val1 = np.min(np.log(times))
-max_val1 = np.max(np.log(times))
-min_val2 = np.min(np.log(errors))
-max_val2 = np.max(np.log(errors))
+# same relative values for all plots
+min_val1 = np.min(np.log10(times))
+max_val1 = np.max(np.log10(times))
+min_val2 = np.min(np.log10(errors))
+max_val2 = np.max(np.log10(errors))
 
 fig,axs = plt.subplots(2,4,figsize=(6,6),
 	gridspec_kw={'width_ratios':[1,1,1,0.05],
 				 'height_ratios':[1,1],
 	             'hspace':0.05,
 	             'wspace':0.05})
-ax1 = axs[0,0].imshow(np.log(times[0,:,:]),vmin=min_val1,vmax=max_val1,cmap=plt.cm.hot,origin='lower')
-ax2 = axs[0,1].imshow(np.log(times[1,:,:]),vmin=min_val1,vmax=max_val1,cmap=plt.cm.hot,origin='lower')
-ax3 = axs[0,2].imshow(np.log(times[2,:,:]),vmin=min_val1,vmax=max_val1,cmap=plt.cm.hot,origin='lower')
-ax4 = axs[1,0].imshow(np.log(errors[0,:,:]),vmin=min_val2,vmax=max_val2,origin='lower')
-ax5 = axs[1,1].imshow(np.log(errors[1,:,:]),vmin=min_val2,vmax=max_val2,origin='lower')
-ax6 = axs[1,2].imshow(np.log(errors[2,:,:]),vmin=min_val2,vmax=max_val2,origin='lower')
+ax1 = axs[0,0].imshow(np.log10(times[0,:,:]),vmin=min_val1,vmax=max_val1,cmap=plt.cm.hot,origin='lower')
+ax2 = axs[0,1].imshow(np.log10(times[1,:,:]),vmin=min_val1,vmax=max_val1,cmap=plt.cm.hot,origin='lower')
+ax3 = axs[0,2].imshow(np.log10(times[2,:,:]),vmin=min_val1,vmax=max_val1,cmap=plt.cm.hot,origin='lower')
+ax4 = axs[1,0].imshow(np.log10(errors[0,:,:]),vmin=min_val2,vmax=max_val2,origin='lower')
+ax5 = axs[1,1].imshow(np.log10(errors[1,:,:]),vmin=min_val2,vmax=max_val2,origin='lower')
+ax6 = axs[1,2].imshow(np.log10(errors[2,:,:]),vmin=min_val2,vmax=max_val2,origin='lower')
 ax7 = axs[0,3]
 ax8 = axs[1,3]
 
@@ -78,10 +80,10 @@ axs[1,0].set_ylabel('$e$')
 
 axs[0,0].set_title('Newton-Raphson')
 axs[0,1].set_title('Iterative')
-axs[0,1].set_title('Kepler\'s Goat Herd')
-fig.colorbar(ax3,cax=ax7,label='$\\log(\Delta t)$ , $\Delta t$ in seconds')
-fig.colorbar(ax6,cax=ax8,label='\n$\\log(n)$ , $n = $number of iterations')
-plt.savefig('test12_out.pdf')
+axs[0,2].set_title('Kepler\'s Goat Herd')
+fig.colorbar(ax3,cax=ax7,label='$\\log10(\Delta t)$ , $\Delta t$ in seconds')
+fig.colorbar(ax6,cax=ax8,label='\n$\\log10(n)$ , $n = $absolute error')
+plt.savefig('test2_out.pdf')
 plt.show()
 
 
