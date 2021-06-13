@@ -1,6 +1,7 @@
+### imports
 import numpy as np, time
 
-def compute_contour(ell_array, eccentricity, N_it):
+def philcox(eccentricity, ell_array, N_it=10):
     """Solve Kepler's equation, E - e sin E = ell, via the contour integration method of Philcox et al. (2021)
     This uses techniques described in Ullisch (2020) to solve the `geometric goat problem'.
     Args:
@@ -134,7 +135,7 @@ if __name__=="__main__":
 
     # Time the function
     init = time.time()
-    E_out = compute_contour(ell_input,eccentricity,N_it)
+    E_out = philcox(eccentricity,ell_input,N_it)
     runtime = time.time()-init
 
     print("\nEstimation complete after %.1f millseconds, achieving mean error %.2e.\n"%(runtime*1000.,np.mean(np.abs(E_out-E_true))))
