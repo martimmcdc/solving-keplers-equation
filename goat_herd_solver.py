@@ -2,7 +2,7 @@
 import numpy as np,time
 
 def goat_herd_solver(e,M,N=10):
-	x0 = M + 0.5*e # contour center
+	x0 = M - 0.5*e # contour center
 	dx = 0.5*e     # contour radius
 	x = np.linspace(0,0.5,N) # integration variable array
 
@@ -13,7 +13,7 @@ def goat_herd_solver(e,M,N=10):
 	# 	x = x[:,np.newaxis] # (axis = 0 for integration variable) and (axis = 1 for M dependence)
 	###
 	
-	x0[M>np.pi] -= e    # (x0=M-e/2 , M < pi) and (x0=M+e/2 , M >= pi)
+	x0[M<np.pi] += e    # (x0=M-e/2 , M < pi) and (x0=M+e/2 , M >= pi)
 	x = x[:,np.newaxis] # (axis = 0 for integration variable) and (axis = 1 for M dependence)
 
 	# Pre calculation of trigonometric and hyperbolic functions
@@ -33,7 +33,7 @@ def goat_herd_solver(e,M,N=10):
 
 	# f(x) = x - e*sin(x) - M
 	fR = x0 + dxcos - (sinx0*ecosdx + cosx0*esindx)*coshdx - M # real part of f(x)
-	fI = dxsin - (cosx0*ecosdx - sinx0*esindx)*sinhdx     # imag part of f(x)
+	fI = dxsin - (cosx0*ecosdx - sinx0*esindx)*sinhdx          # imag part of f(x)
 	
 	# Integrand functions up to constant which disappears in division
 	# Re[d(ak)/dx] = Re[a(x)*exp(-2i.pi.k.x)], where a(x) = 1/f(x) = 1/(fR + ifI)

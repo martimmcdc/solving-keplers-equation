@@ -4,35 +4,32 @@ import numpy as np,time
 ### Newton-Raphson method
 def newton_solver(e, M, epsilon=1e-9, iter_counter=False):
     # initial guess x0 = M
-    x = M + e*np.sin(M)/(1-e*np.cos(M)) # first iteration
-    error = x*epsilon + 1
+    error = e*np.sin(M)
+    x = M + error/(1-e*np.cos(M)) # first iteration
     counter = 1
-    while error>abs(x)*epsilon: # relative error between successive iterations 
-        x0 = x                                          # update last to calculated value
-        x -= (x0 - e*np.sin(x0) - M)/(1 - e*np.cos(x0)) # calculate next value
-        error = abs(x0-x)
+    while error>epsilon: # relative error between successive iterations
+        h0 = x - e*np.sin(x) - M # function
+        h1 = 1 - e*np.cos(x)     # first derivative
+        x -= h0/h1               # newton-raphson correction
+        error = np.abs(h0)       # error in function value
         counter += 1
-
     if iter_counter:
         return x, counter
-
     return x
 
-def newton_solver2(e,M,epsilon=1e-6,iter_counter=False):
+def newton_solver2(e,M,epsilon=1e-9,iter_counter=False):
     # initial guess x0 = M
-    x = M + e*np.sin(M)/(1 - e*np.cos(M)) # first iteration
-    filt = np.abs(M-x)>np.abs(x)*epsilon  # filter values which have not reached precision of epsilon
+    esinM = e*np.sin(M)
+    x = M + esinM/(1 - e*np.cos(M)) # first iteration
+    filt = esinM>epsilon  # filter values which have not reached precision of epsilon
     counter = 1
-
-    while filt.any(): 
-        x0 = x.copy()                          # update current guess
-        array = x0[filt].copy()                # values to be changed
+    while filt.any():
+        array = x[filt].copy()                 # values to be changed
         h0 = array - e*np.sin(array) - M[filt] # function
         h1 = 1-e*np.cos(array)                 # first derivative
         x[filt] -= h0/h1                       # newton-raphson correction
-        filt = np.abs(x0-x)>np.abs(x)*epsilon  # filter values which have not reached precision of epsilon 
+        filt[filt] = np.abs(h0)>epsilon        # filter values which have not reached precision of epsilon
         counter += 1
-
     if iter_counter:
         return x,counter
     return x
