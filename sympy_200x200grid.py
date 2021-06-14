@@ -10,8 +10,8 @@ M = linspace(0,pi,N)
 e = arange(0,1,1/N)
 
 for i in range(N):
-	Mi = M[i]
+	ei = e[i]
 	for j in range(N):
-		array[i,j] = sympy_solver(e[j],Mi)
+		array[i,j] = sympy_solver(ei,M[j])
 
 savetxt('sympy_200x200grid.txt',array)
