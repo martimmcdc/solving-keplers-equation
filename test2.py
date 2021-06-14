@@ -40,18 +40,18 @@ Nt = 10
 zeros = np.zeros([3,len(e),len(M)],float)  # array to store the roots
 times = np.zeros(zeros.shape,float)        # array to store the run time
 methods = [newton_solver2,iterative_solver2,goat_herd_solver] # methods to compare
+M_array = M[1:-1] # M input as array without 0 and pi values
 for i in range(3):
 	method = methods[i]
 	name2 = method.__name__ # method name to feed timeit function
 	if i in [0,1]: name = name2.strip('2')
 	else: name = name2
 	set_up = '''import numpy as np;from {} import {}'''.format(name,name2) # setup to be subtracted from runtime estimate
-	M_array = M[1:-1]
-	for k in range(1,len(e)-1):
-		ek = e[k]
-		statement = '''{}({},np.{})'''.format(name2,ek,repr(M_array)) # statement to be timed
-		times[i,1:-1,k] = timeit(stmt=statement,setup=set_up,number=Nt) # runtime for 10 calculations
-		zeros[i,1:-1,k] = method(ek,M_array) # values of iteration number
+	for j in range(1,len(e)-1):
+		ej = e[j]
+		statement = '''{}({},np.{})'''.format(name2,ej,repr(M_array)) # statement to be timed
+		times[i,j,1:-1] = timeit(stmt=statement,setup=set_up,number=Nt) # runtime for 10 calculations
+		zeros[i,j,1:-1] = method(ej,M_array) # values of iteration number
 times /= Nt # average
 times = times[:,1:-1,1:-1]
 errors = np.abs(zeros[:,1:-1,1:-1].copy()- sympy_solutions[1:-1,1:-1]) # error values

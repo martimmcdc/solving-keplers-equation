@@ -44,17 +44,16 @@ Nt = 10 # number of calculation runtimes to average over
 zeros = np.zeros([2,len(e),len(M)],float)  # array to store the roots
 times = np.zeros(zeros.shape,float)        # array to store the run time
 methods = [goat_herd_solver,philcox] # methods to compare
-
+M_array = M[1:-1] # M input as array without 0 and pi values
 for i in range(2):
 	method = methods[i]
 	name = method.__name__ # method name to feed timeit function
 	set_up = '''import numpy as np;from {} import {}'''.format(name,name) # setup to be subtracted from runtime estimate
-	M_array = M[1:-1]
-	for k in range(1,len(e)-1):
-		ek = e[k]
-		statement = '''{}({},np.{})'''.format(name,ek,repr(M_array)) # statement to be timed
-		times[i,1:-1,k] = timeit(stmt=statement,setup=set_up,number=Nt) # runtime for 10 calculations
-		zeros[i,1:-1,k] = method(ek,M_array) # values of iteration number
+	for j in range(1,len(e)-1):
+		ej = e[j]
+		statement = '''{}({},np.{})'''.format(name,ej,repr(M_array)) # statement to be timed
+		times[i,j,1:-1] = timeit(stmt=statement,setup=set_up,number=Nt) # runtime for 10 calculations
+		zeros[i,j,1:-1] = method(ej,M_array) # values of iteration number
 times /= Nt # average
 times = times[:,1:-1,1:-1]
 errors = np.abs(zeros[:,1:-1,1:-1].copy()- sympy_solutions[1:-1,1:-1]) # error values

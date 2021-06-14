@@ -35,13 +35,13 @@ for i in range(2):
 	method = methods[i]
 	name = method.__name__                             # method name to feed timeit function
 	set_up = '''from {} import {}'''.format(name,name) # setup to be subtracted from runtime estimate
-	for j in range(len(M)):
-		Mj = M[j]
-		for k in range(len(e)):
-			ek = e[k]
-			statement = '''{}({},{},epsilon=1e-9,iter_counter=True)'''.format(name,ek,Mj) # statement to be timed
+	for j in range(N):
+		ej = e[j]
+		for k in range(N):
+			Mk = M[k]
+			statement = '''{}({},{},epsilon=1e-9,iter_counter=True)'''.format(name,ej,Mk) # statement to be timed
 			times[i,j,k] = timeit(stmt=statement,setup=set_up,number=Nt)                  # runtime for 10 calculations
-			iterations[i,j,k] = method(ek,Mj,epsilon=1e-9,iter_counter=True)[1] # values of iteration number
+			iterations[i,j,k] = method(ej,Mk,epsilon=1e-9,iter_counter=True)[1] # values of iteration number
 times /= Nt # average
 
 
