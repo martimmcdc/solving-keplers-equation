@@ -1,6 +1,7 @@
 ### imports
 import numpy as np
 import matplotlib.pyplot as plt
+from sympy_solver import sympy_solver
 
 
 def factorial(n):
@@ -20,7 +21,7 @@ def nijenhuis_solver(e,M,order=4):
 		lim2 = 1-e
 	rA = M>=lim1
 	rB = (M<lim1)*(M>=lim2)
-	rC = M<lim2 # if e > log10(pi) region C is region D
+	rC = M<lim2 # if e > 0.5 region C is region D
 
 	# rough starters and refinement through Halley's method in A, B and C and Newton-Raphson in D
 	E_rough = np.zeros(len(M),float)
@@ -40,17 +41,17 @@ def nijenhuis_solver(e,M,order=4):
 		h0 = E_rough - e*(E_rough - a1*E_rough3 + a2*E_rough5) - M
 		h1 = 1 - e*(1 - a1*3*E_rough2 - a2*5*E_rough2*E_rough2)
 		h2 = e*(a1*6*E_rough - a2*20*E_rough3)
-		E_ref = E_rough - h0/(h1 - 0.5*h0*h2/h1)
+		E_ref = E_rough - h0*h1/(h1*h1 - 0.5*h0*h2)
 	else:
 		# treat regions A and B separately
 		E_roughAB = E_rough[rA|rB]
 		E_roughAB2 = E_roughAB*E_roughAB
 		E_roughAB3 = E_roughAB*E_roughAB2
 		E_roughAB5 = E_roughAB2*E_roughAB3
-		h0 = (1-e)*E_roughAB + e*(a1*E_roughAB3 - a2*E_roughAB5) - M[rA|rB]
-		h1 = 1 - e + e*(a1*3*E_roughAB2 - a2*5*E_roughAB2*E_roughAB2)
+		h0 = E_roughAB - e*(E_roughAB - a1*E_roughAB3 + a2*E_roughAB5) - M[rA|rB]
+		h1 = 1 - e*(1 - a1*3*E_roughAB2 + a2*5*E_roughAB2*E_roughAB2)
 		h2 = e*(a1*6*E_roughAB - a2*20*E_roughAB3)
-		E_ref[rA|rB] = E_roughAB - h0/(h1 - 0.5*h0*h2/h1)
+		E_ref[rA|rB] = E_roughAB - h0*h1/(h1*h1 - 0.5*h0*h2)
 
 		# treat region D
 		denom = 4*e + 0.5 
@@ -69,35 +70,37 @@ def nijenhuis_solver(e,M,order=4):
 		h1 = 0.375*s2*s2 + denom*s2 + 1 - e
 		s -= h0/h1
 		E_rough[rC] = s
-		E_ref[rC] = M[rC] + e*s*(3 - 4*s2)
+		E_ref[rC] = M[rC] + e*(3*s - 4*s3)
 
 	# Final Step
 
-	# Precompute e*sin(E) and e*cos(E)
+	# Pre-compute e*sin(E) and e*cos(E)
 	esinE = e*np.sin(E_ref)
 	ecosE = e*np.cos(E_ref)
 
-	func = np.empty([order+1,len(M)],float) # f and its derivatives
-	h = np.zeros(func.shape,float)          # h constants (0th component has no meaning)
-	delta = np.zeros(func.shape,float)      # delta constants (0th component has no meaning)
+	# Arrays to store values in terms of order (1st index) and different M values (2nd index)
+	func = np.empty([order+1,len(M)],float) # f and its m = order derivatives
+	h = np.zeros(func.shape,float)          # h constants (0th order has no meaning)
+	delta = np.zeros(func.shape,float)      # delta constants (0th order has no meaning)
 
 	# Substitute function's and derivatives' values into array
-	func[::4,:] = -esinE
-	func[1::4,:]= -ecosE
-	func[2::4,:]= esinE
-	func[3::4,:]= ecosE
-	func[0,:] += E_ref - M
-	func[1,:] += 1
+	func[::4,:] = -esinE   # 0th, 4th, ... order derivatives
+	func[1::4,:]= -ecosE   # 1st, 5th, ... order derivatives
+	func[2::4,:]= esinE    # 2nd, 6th, ... order derivatives
+	func[3::4,:]= ecosE    # 3rd, 7th, ... order derivatives
+	func[0,:] += E_ref - M # add linear and constant terms to function
+	func[1,:] += 1         # add linear term's 1st derivative
 
-	delta[1,:] = func[1,:]
-	h[1,:] = -func[0,:]/delta[1,:]
+	delta[1,:] = func[1,:]         # 1st delta value
+	h[1,:] = -func[0,:]/delta[1,:] # 1st h value
 
+	# Compute h[i] from i=2 to i=order, using h[j] values from j=1 to j=i-1
 	for i in range(2,order+1):
 		for j in range(1,i):
 			delta[i,:] += func[i-j+1,:]/factorial(i-j+1)
 			delta[i,:] *= h[j,:]
 		delta[i,:] += func[1,:]
-		h[i,:] = -func[0,:]/delta[i,:]
+		h[i,:] = -func[0,:]/delta[i,:].copy()
 	return E_ref + h[-1,:]
 
 
@@ -134,22 +137,25 @@ if __name__ == '__main__':
 
 	# Plot map
 	plt.imshow(vals,origin='lower',aspect=1/np.pi)
-	plt.axvline(2*N/np.pi)
 	plt.xticks(np.arange(0,N)[::200],labels=np.round(M[::200],decimals=2))
 	plt.yticks(np.arange(0,N)[::200],labels=e[::200])
-	plt.colorbar(shrink=1/np.pi)
+	plt.xlabel('$M$')
+	plt.ylabel('$e$')
+	plt.title('Regions with different initial guess \nand refinement method')
 	plt.show()
 
 	# Plot values calculated and compare with pre-calculated grid
-	sympy_grid = np.loadtxt('sympy_200x200grid.txt')
+	sympy_grid = np.loadtxt('sympy_200x200grid.txt')[::30]
 	M = np.linspace(0,np.pi,200)
+	e = np.arange(0,1,1/200)[::30]
 	for order in range(1,6):
-		for e in np.linspace(0,1-1e-2,6):
-			vals = nijenhuis_solver(e,M,order)
-			sympy_vals = sympy_grid[int(e*200),:]
-			ax = plt.plot(M,vals,label='e = {:.3}'.format(e))
-			plt.plot(M,sympy_vals,'--',color=ax[0].get_color())
-		plt.title('order = {}'.format(order))
+		for i in range(len(e)):
+			vals = nijenhuis_solver(e[i],M,order)
+			sympy_vals = sympy_grid[i,:]
+			plt.plot(M,vals-sympy_vals,label='e = {}'.format(e[i]))
+		plt.xlabel('$M$')
+		plt.ylabel('$\Delta E$')
+		plt.title('order: $m = {}$'.format(order))
 		plt.legend()
 		plt.grid()
 		plt.show()

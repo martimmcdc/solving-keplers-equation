@@ -1,5 +1,7 @@
 ### imports
 import numpy as np,time
+import matplotlib.pyplot as plt
+from sympy_solver import sympy_solver
 
 ### Newton-Raphson method
 def newton_solver(e, M, epsilon=1e-9, iter_counter=False):
@@ -59,3 +61,35 @@ if __name__=="__main__":
     runtime = time.time()-init
     print("\nEstimation complete after %.1f millseconds, achieving mean error %.2e.\n"%(runtime*1000.,np.mean(np.abs(E_out-E_true))))
     print(iters,'iterations')
+
+
+    # Plot values calculated and compare with pre-calculated grid
+    sympy_grid = np.loadtxt('sympy_200x200grid.txt')[::30,:]
+    M = np.linspace(0,np.pi,200)
+    e = np.arange(0,1,1/200)[::30]
+    for power in range(6,16,3):
+        for i in range(len(e)):
+            vals = newton_solver2(e[i],M,epsilon=10**(-power))
+            sympy_vals = sympy_grid[i,:]
+            plt.plot(M,vals-sympy_vals,label='e = {}'.format(e[i]))
+        plt.xlabel('$M$')
+        plt.ylabel('$\Delta E$')
+        plt.title('$\\epsilon = 10^{}$'.format('{'+str(-power)+'}'))
+        plt.legend()
+        plt.grid()
+        plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
