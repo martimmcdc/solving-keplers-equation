@@ -26,7 +26,7 @@ e = np.arange(0,1,1/N)     # eccentricity values in [0,1)
 
 ### Calculation ###
 
-Nt = 10 # number of calculation runtimes to average over
+Nt = 2 # number of calculation runtimes to average over
 iterations = np.zeros([2,len(e),len(M)],float) # array to store the number of iterations
 times = np.zeros([2,len(e),len(M)],float)      # array to store the run time
 methods = [newton_solver,iterative_solver] # methods to compare
@@ -34,15 +34,17 @@ methods = [newton_solver,iterative_solver] # methods to compare
 for i in range(2):
 	method = methods[i]
 	name = method.__name__                             # method name to feed timeit function
-	set_up = '''from {} import {}'''.format(name,name) # setup to be subtracted from runtime estimate
+	set_up = '''import numpy as np;from {} import {}'''.format(name,name) # setup to be subtracted from runtime estimate
 	for j in range(N):
 		ej = e[j]
 		for k in range(N):
-			Mk = M[k]
-			statement = '''{}({},{},epsilon=1e-9,iter_counter=True)'''.format(name,ej,Mk) # statement to be timed
+			Mk = np.array([M[k]])
+			statement = '''{}({},np.{},epsilon=1e-9,iter_counter=True)'''.format(name,ej,repr(Mk)) # statement to be timed
 			times[i,j,k] = timeit(stmt=statement,setup=set_up,number=Nt)                  # runtime for 10 calculations
 			iterations[i,j,k] = method(ej,Mk,epsilon=1e-9,iter_counter=True)[1] # values of iteration number
 times /= Nt # average
+times += 1e-16
+iterations += 1e-16
 
 
 ### Plot ###
@@ -96,22 +98,29 @@ axs[0,0].set_title('Newton-Raphson')
 axs[0,1].set_title('Iterative')
 
 # save and show
-plt.savefig('test1_out.pdf')
+plt.savefig('test1_out.pdf',bbox_inches='tight')
 plt.show()
 
 
 ### Print statistics ###
-phrases = np.array(['Mean calculation time: ','Standard deviation: ','Min. calculation time: ','Max. calculation time: '])
-phrases[1] = ' '*(len(phrases[0])-len(phrases[1]))+phrases[1]
+phrases = ['Mean runtime: ','Standard deviation: ','Min. runtime: ','Max. runtime: ']
+lengths = [len(phrases[i]) for i in range(len(phrases))]
+phrases = [' '*(max(lengths)-lengths[i])+phrases[i] for i in range(4)]
+names = ['Newton-Raphson','Iterative']
+name_phrase = ''
+for i in range(len(names)-1):
+    name_phrase += names[i]+' | '
+name_phrase += names[-1]
+name_phrase = ' '*max(lengths) + name_phrase
 [mean1,mean2] = np.mean(times,axis=(1,2))
 [std1,std2] = np.std(times,axis=(1,2))
 [min1,min2] = np.min(times,axis=(1,2))
 [max1,max2] = np.max(times,axis=(1,2))
 
 print('\n')
-print(' '*len(phrases[0]) + 'My implementation  |  Original')
-print(phrases[0] + '   {:.3e}    |  {:.3e}'.format(mean1,mean2))
-print(phrases[1] + '   {:.3e}    |  {:.3e}'.format(std1,std2))
-print(phrases[2] + '   {:.3e}    |  {:.3e}'.format(min1,min2))
-print(phrases[3] + '   {:.3e}    |  {:.3e}'.format(max1,max2))
+print(name_phrase)
+print(phrases[0] + '   {:.3e}   | {:.3e}'.format(mean1,mean2))
+print(phrases[1] + '   {:.3e}   | {:.3e}'.format(std1,std2))
+print(phrases[2] + '   {:.3e}   | {:.3e}'.format(min1,min2))
+print(phrases[3] + '   {:.3e}   | {:.3e}'.format(max1,max2))
 print('\n')
