@@ -26,6 +26,8 @@ from newton_solver import newton_solver
 from goat_herd_solver import goat_herd_solver
 from nijenhuis_solver import nijenhuis_solver
 from danby_solver import danby_solver
+from cordic_solver import cordic_solver
+from murison_solver import murison_solver
 
 
 ### Sympy calculated values to compare with ###
@@ -38,12 +40,13 @@ M = np.linspace(0,np.pi,N) # mean anomaly values in [0,pi]
 e = np.arange(0,1,1/N)     # eccentricity values in [0,1)
 
 ### Calculation ###
+names = ['Newton-Raphson','Iterative','Kepler\'s Goat Herd','Nijenhuis','Danby','CORDIC','Murison']
+methods = [newton_solver,iterative_solver,goat_herd_solver,nijenhuis_solver,danby_solver,cordic_solver,murison_solver] # functions
 Nt = 10
-zeros = np.zeros([5,len(e),len(M)],float)  # array to store the roots
+zeros = np.zeros([len(methods),len(e),len(M)],float)  # array to store the roots
 times = np.zeros(zeros.shape,float)        # array to store the run time
-methods = [newton_solver,iterative_solver,goat_herd_solver,nijenhuis_solver,danby_solver] # methods to compare
 M_array = M[1:-1] # M input as array without 0 and pi values
-for i in range(5):
+for i in range(len(methods)):
 	method = methods[i]
 	name = method.__name__ # method name to feed timeit function
 	set_up = "import numpy as np;from {} import {}".format(name,name) # setup to be subtracted from runtime estimate
@@ -60,28 +63,26 @@ log10errors = np.log10(errors+1e-20) # avoid errors when taking log(errors) of e
 
 ### Plot ###
 
-names = ['Newton-Raphson','Iterative','Kepler\'s Goat Herd','Nijenhuis','Danby']
-
 # same relative values for all plots
 min_val1 = np.min(log10times)
 max_val1 = np.max(log10times)
 min_val2 = np.min(log10errors)
 max_val2 = np.max(log10errors)
 
-fig,axs = plt.subplots(2,6,
-	figsize=(2*6.4,4.8),
-	gridspec_kw={'width_ratios':[1,1,1,1,1,0.05],
+fig,axs = plt.subplots(2,len(methods)+1,
+	figsize=(4*6.4,4.8),
+	gridspec_kw={'width_ratios':([1]*len(methods)).append(0.05),
 				 'height_ratios':[1,1],
 	             'hspace':0.05,
 	             'wspace':0.05})
-for i in range(5):
+for i in range(len(methods)):
 	ax0 = axs[0,i].imshow(log10times[i,:,:],vmin=min_val1,vmax=max_val1,cmap=plt.cm.hot,origin='lower')
 	ax1 = axs[1,i].imshow(log10errors[i,:,:],vmin=min_val2,vmax=max_val2,origin='lower')
 	axs[0,i].set_title(names[i])
 
 # colorbars
-fig.colorbar(ax0,cax=axs[0,5],shrink=0.6,label='$\\log10(\Delta t)$ , $\Delta t$ in seconds')
-fig.colorbar(ax1,cax=axs[1,5],label='$\\log10(n)$ , $n = $absolute error')
+fig.colorbar(ax0,cax=axs[0,-1],shrink=0.6,label='$\\log10(\Delta t)$ , $\Delta t$ in seconds')
+fig.colorbar(ax1,cax=axs[1,-1],label='$\\log10(n)$ , $n = $absolute error')
 
 # plot labeling and ticks
 eticks = (e[::N//10]*N)[1:]
@@ -89,7 +90,7 @@ elabels= np.round(e[::N//10],1)[1:]
 Mticks = np.linspace(0,N,5)
 Mlabels= ['0','$\\frac{\pi}{4}$','$\\frac{\pi}{2}$','$\\frac{3\pi}{4}$','$\\pi$']
 
-for i in range(5):
+for i in range(len(methods)):
 	axs[0,i].tick_params(direction='in',labelbottom=False)
 	axs[1,i].set_xticks(Mticks)
 	axs[1,i].set_xticklabels(Mlabels)
@@ -98,7 +99,7 @@ for i in range(2):
 	axs[i,0].set_yticks(eticks)
 	axs[i,0].set_yticklabels(elabels)
 	axs[i,0].set_ylabel('$e$')
-	for j in range(1,5):
+	for j in range(1,len(methods)):
 		axs[i,j].tick_params(direction='in',labelleft=False)
 axs[1,0].tick_params(direction='in')
 
