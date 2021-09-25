@@ -13,7 +13,9 @@ if __name__ == '__main__':
 		start = time()
 		for e_val in e:
 			solution = method(e_val,M)
-			# print(solution)
+			# if method.__name__=='nijenhuis_solver':
+			# 	print(f'e = {e_val}')
+			# 	print(solution)
 			plt.plot(M,solution,label='e = '+str(e_val))
 		t = time() - start
 		plt.title(method.__name__+f" (in {round(t,4)}s)")

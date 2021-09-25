@@ -36,8 +36,6 @@ double iterative_solver(double e, double M, double epsilon=1.0e-9){
 
 // Kepler's Goat Herd solver
 double goat_herd_solver(double e, double M, int N=10){
-
-    // double pi = atan(1.0)*4;
     
     double x0 = M - 0.5*e; // contour center
     double dx = 0.5*e;     // contour radius
@@ -149,56 +147,51 @@ int factorial(int num){
 // Nijenhuis solver
 double nijenhuis_method(double e, double M, int order=1){
     
-    // double pi = atan(1.0)*4;
+    double e_1 = 1 - e;
+    double mikkoleft = 0.45;
+    double mikkolup = 1 - mikkoleft;
     double E_rgh; // rough starter
     double E_ref; // refined starter
-
-    // regions
-    double lim1 = pi - 1 - e;
-    double lim2;
-    if(e<0.5){
-        lim2 = 1-e;
-    }else{
-        lim2 = 0.5;
-    }
-
 
     // rough starters and refinement through Halley's method in A, B and C and Newton-Raphson in D
     double h0,h1;
 
-    if(e < 0.5 || M > lim2){
+    if(e > mikkolup && M < mikkoleft){
+        double denom = 4 * e + 0.5;
+        double q = M/(2 * denom);
+        double p = e_1/denom;
+        double p2 = p * p;
+        double z2 = pow(sqrt(p * p2 + q * q) + q, 2/3);
+        E_rgh = 2 * q/(z2 + p + p2/z2);
+        double s2 = E_rgh * E_rgh;
+        double s4 = s2 * s2;
+        h0 = 0.075 * s4 * E_rgh;
+        h1 = 0.375 * s4 + denom * s2 + e_1;
+        E_rgh -= h0/h1;
+        E_ref = M + e * E_rgh * (3 - 4 * s2); // refined starter in region D
+    }else{
+
+        // regions
+        double lim1 = pi - 1 - e;
+        double lim2;
+        if(e <= mikkolup){
+            lim2 = e_1;
+        }else{
+            lim2 = mikkoleft;
+        }
+
         if(M >= lim1){
             E_rgh = (M + pi * e)/(1 + e); // rough starter in region A
         }else if(M < lim1 && M >= lim2){
             E_rgh = M + e; // rough starter in region B
         }else{
-            E_rgh = M/(1 - e); // rough starter in region C
+            E_rgh = M/e_1; // rough starter in region C
         }
         double esinx = e*sin(E_rgh);
         double ecosx = e*cos(E_rgh);
         h0 = E_rgh - esinx - M;
         h1 = 1 - ecosx;
-        double h2 = esinx;
-        E_ref = E_rgh - h0 * h1/(h1 * h1 - 0.5 * h0 * h2); // refined starter in regions A, B and C
-    }else{
-        double denom = 4 * e + 0.5;
-        double q = M/(2 * denom);
-        double p = (1 - e)/denom;
-        double q2 = q * q;
-        double p2 = p * p;
-        double z = pow(sqrt(p * p2 + q2) + q, 1/3);
-        double z2 = z * z;
-        double s = 2 * q/(z2 + p + p2/z2);
-        double s2 = s * s;
-        double s3 = s * s2;
-        double s5 = s2 * s3;
-        h0 = 0.075 * s5 + (denom * s3 - M)/3 + (1 - e)*s;
-        h1 = 0.375 * s2 * s2 + denom * s2 + 1 - e;
-        //h0 = (denom * s3 - M)/3 + (1 - e)*s;
-        //h1 = denom * s2 + 1 - e;
-        s -= h0/h1;
-        E_rgh = s; // rough starter in region D
-        E_ref = M + e * (3 * s - 4 * s3); // refined starter in region D
+        E_ref = E_rgh - h0 * h1/(h1 * h1 - 0.5 * h0 * esinx); // refined starter in regions A, B and C
     }
 
     // Final Step
@@ -211,6 +204,7 @@ double nijenhuis_method(double e, double M, int order=1){
     double func[order+1];  // f and its m = order derivatives
     double h[order+1];     // h constants (0th order has no meaning)
     double delta[order+1]; // delta constants (0th order has no meaning)
+    int f;
 
     // Substitute function's and derivatives' values into array
     for(int i = 0; i < order + 1; i += 4){
@@ -227,11 +221,15 @@ double nijenhuis_method(double e, double M, int order=1){
     h[1] = -func[0]/delta[1]; // 1st h value
 
     // Compute h[i] from i=2 to i=order, using h[j] values from j=1 to j=i-1
+    std::cout << order << std::endl;
     for(int i = 2; i < order + 1; i++){
         for(int j = 1; j < i; j++){
-            delta[i] += func[i-j+1]/factorial(i-j+1);
+            f = factorial(i-j+1);
+            delta[i] += func[i-j+1]/f;
             delta[i] *= h[j];
             delta[i] += func[1];
+            // std::cout << "i = " << i << ", j = " << j << "i - j + 1 = " << i-j+1 << std::endl;
+            // std::cout << "f = " << f << ", delta[i] = " << delta[i] << "\n" << std::endl;
             h[i] = -func[0]/delta[i];
         }
     }
@@ -297,7 +295,7 @@ double KeplerStart3(double e, double M){
 }
 
 double eps3(double e, double M, double x){
-    
+
     double t1 = cos(x);
     double t2 = -1 + e * t1;
     double t3 = sin(x);
@@ -309,7 +307,6 @@ double eps3(double e, double M, double x){
 
 double murison_solver(double e, double M, double epsilon=1e-9){
 
-    // double pi = atan(1.)*4;
     double Mnorm = fmod(M,2*pi);
     double E = KeplerStart3(e,Mnorm);
     double h0 = E - e*sin(E) - M;
@@ -333,21 +330,9 @@ PYBIND11_MODULE(cpp_solvers, module){
     module.def("danby_solver", py::vectorize(&danby_solver), "Danby's solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("epsilon")=1e-9);
     module.def("nijenhuis_solver", py::vectorize(&nijenhuis_solver), "Nijenhuis' solver for Kepler's equation",
-        py::arg("e"),py::arg("M"),py::arg("epsilon")=1e-9);
+        py::arg("e"),py::arg("M"),py::arg("epsilon")=1e-2);
     module.def("cordic_solver", py::vectorize(&cordic_solver), "CORDIC solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("n")=29);
     module.def("murison_solver", py::vectorize(&murison_solver), "Murison's solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("epsilon")=1e-9);
 }
-
-
-
-
-
-
-
-
-
-
-
-
