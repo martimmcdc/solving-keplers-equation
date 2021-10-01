@@ -39,8 +39,8 @@ zeros = np.zeros([len(methods),len(e),len(M)],float) # array to store the roots
 times = np.zeros(zeros.shape,float) # array to store the run time
 for i in range(len(methods)):
 	name = methods[i]
-	fname_times = 'solver_grids/'+name+'_200x200grid_runtime.txt'
-	fname_zeros = 'solver_grids/'+name+'_200x200grid_zeros.txt'
+	fname_times = 'py_solver_grids/'+name+'_200x200grid_runtime.txt'
+	fname_zeros = 'py_solver_grids/'+name+'_200x200grid_zeros.txt'
 	times[i,:,:] = np.loadtxt(fname_times)
 	zeros[i,:,:] = np.loadtxt(fname_zeros)
 times = times[:,1:-1,1:-1]
@@ -91,7 +91,7 @@ for i in range(2):
 axs[1,0].tick_params(direction='in')
 
 # save and show
-plt.savefig('test4_out.pdf',bbox_inches='tight')
+plt.savefig('test_py_out.pdf',bbox_inches='tight')
 plt.show()
 
 
@@ -111,5 +111,5 @@ stats[7,:] = np.max(errors,axis=(1,2))
 
 pd.options.display.float_format = '{:.3e}'.format
 df = pd.DataFrame(data=stats,index=phrases,columns=names)
-df.to_csv('test4_stats.txt',sep='\t')
+df.to_csv('test_py_stats.txt',sep='\t')
 print('\n',df,'\n')

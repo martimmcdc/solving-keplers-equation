@@ -14,7 +14,6 @@ when the desired precision is reached, the algorithm runs one additional time.
 ### imports
 import numpy as np
 
-
 def iterative_solver(e,M,epsilon=1e-9,iter_counter=False):
     # initial guess x0 = M
     x = M + 0.85*e # first iteration

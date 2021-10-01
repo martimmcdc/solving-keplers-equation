@@ -1,5 +1,5 @@
 """
-This script is an implementation of M. Zechmeister's CORDIC algorithm  for solving Kepler's equation.
+This script is an implementation of M. Zechmeister's CORDIC algorithm for solving Kepler's equation.
 It is slightly different than that available on the author's GitHub, since it works for mean anomaly arrays,
 rather than scalar values. I used the NumPy library to improve performance, given this difference.
 """

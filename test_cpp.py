@@ -91,7 +91,7 @@ for i in range(2):
 axs[1,0].tick_params(direction='in')
 
 # save and show
-plt.savefig('test5_out.pdf',bbox_inches='tight')
+plt.savefig('test_cpp_out.pdf',bbox_inches='tight')
 plt.show()
 
 
@@ -111,5 +111,5 @@ stats[7,:] = np.max(errors,axis=(1,2))
 
 pd.options.display.float_format = '{:.3e}'.format
 df = pd.DataFrame(data=stats,index=phrases,columns=names)
-df.to_csv('test5_stats.txt',sep='\t')
+df.to_csv('test_cpp_stats.txt',sep='\t')
 print('\n',df,'\n')

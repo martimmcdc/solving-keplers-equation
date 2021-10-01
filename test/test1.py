@@ -14,9 +14,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from timeit import timeit
+import os
+os.chdir('../py_implementations')
 from iterative_solver import iterative_solver
 from newton_solver import newton_solver
-
+os.chdir('../test')
 
 ### Grid values ###
 N = 200                    # number of grid points for e and M

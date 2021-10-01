@@ -26,12 +26,14 @@ def factorial(n):
 ### Nijenhuis' method
 def nijenhuis_method(e,M,order=1):
 
+	e_1 = 1 - e
+
 	# regions
 	lim1 = np.pi - 1 - e
-	if e<0.5:
-		lim2 = 1-e
+	if e<0.55:
+		lim2 = e_1
 	else:
-		lim2 = 0.5
+		lim2 = 0.45
 	rA = M>=lim1
 	rB = (M<lim1)*(M>=lim2)
 	rC = M<lim2 # if e > 0.5 region C is region D
@@ -42,15 +44,14 @@ def nijenhuis_method(e,M,order=1):
 	E_rgh[rB] = M[rB] + e               # rough starter in region B
 	E_ref = np.zeros(E_rgh.shape,float) # array to store refined values
 
-	if e<0.5:
+	if e<0.55:
 		# treat whole interval
-		E_rgh[rC] = M[rC]/(1-e) # rough starter in region C
+		E_rgh[rC] = M[rC]/e_1 # rough starter in region C
 		esinx = e*np.sin(E_rgh)
 		ecosx = e*np.cos(E_rgh)
 		h0 = E_rgh - esinx - M
 		h1 = 1 - ecosx
-		h2 = esinx
-		E_ref = E_rgh - h0*h1/(h1*h1 - 0.5*h0*h2)
+		E_ref = E_rgh - h0*h1/(h1*h1 - 0.5*h0*esinx)
 	else:
 		# treat regions A and B separately
 		E_rghAB = E_rgh[rA|rB]
@@ -58,28 +59,21 @@ def nijenhuis_method(e,M,order=1):
 		ecosx = e*np.cos(E_rghAB)
 		h0 = E_rghAB - esinx - M[rA|rB]
 		h1 = 1 - ecosx
-		h2 = esinx
-		E_ref[rA|rB] = E_rghAB - h0*h1/(h1*h1 - 0.5*h0*h2)
+		E_ref[rA|rB] = E_rghAB - h0*h1/(h1*h1 - 0.5*h0*esinx)
 
 		# treat region D
 		denom = 4*e + 0.5 
 		q = M[rC]/(2*denom)
-		p = (1-e)/denom
-		q2 = q*q
+		p = e_1/denom
 		p2 = p*p
-		z = (np.sqrt(p*p2 + q2) + q)**(1/3)
-		z2 = z*z
+		z2 = (np.sqrt(p*p2 + q*q) + q)**(2/3)
 		s = 2*q/(z2 + p + p2/z2)
 		s2 = s*s
-		s3 = s*s2
-		s5 = s2*s3
-		# h0 = 0.075*s5 + (denom*s3-M[rC])/3 + (1-e)*s
-		# h1 = 0.375*s2*s2 + denom*s2 + 1 - e
-		h0 = (denom*s3-M[rC])/3 + (1-e)*s
-		h1 = denom*s2 + 1 - e
+		s4 = s2*s2
+		h0 = 0.075*s4*s
+		h1 = 0.375*s4 + denom*s2 + e_1
 		s -= h0/h1
-		E_rgh[rC] = s
-		E_ref[rC] = M[rC] + e*(3*s - 4*s3)
+		E_ref[rC] = M[rC] + e * s * (3 - 4*s2)
 
 	# Final Step
 
@@ -106,7 +100,7 @@ def nijenhuis_method(e,M,order=1):
 	# Compute h[i] from i=2 to i=order, using h[j] values from j=1 to j=i-1
 	for i in range(2,order+1):
 		for j in range(1,i):
-			delta[i,:] = delta[i,:] + func[i-j+1,:]/factorial(i-j+1)
+			delta[i,:] += func[i-j+1,:]/factorial(i-j+1)
 			delta[i,:] *= h[j,:]
 		delta[i,:] += func[1,:]
 		h[i,:] = -func[0,:]/delta[i,:].copy()
@@ -115,19 +109,17 @@ def nijenhuis_method(e,M,order=1):
 ### Nijenhuis' solver
 def nijenhuis_solver(e,M,epsilon=1e-9,iter_order=False):
 	x = M
-	filt = e*np.abs(np.sin(x))>epsilon
-	#filt = np.ones(len(M),bool)
+	filt = e*np.abs(np.sin(x)) > epsilon
 	solutions = np.empty(len(M),float)
 	m = 0
 	while filt.any():
 		m += 1 # raise order for values which have not reached epsilon
 		array = nijenhuis_method(e,M[filt],order=m)
 		solutions[filt] = array
-		filt[filt] = np.abs(array - e*np.sin(array)-M[filt])>epsilon
+		filt[filt] = np.abs(array - e*np.sin(array) - M[filt]) > epsilon
 	if iter_order:
 		return solutions,m
-	else:
-		return solutions
+	return solutions
 
 ### Test function
 if __name__ == '__main__':
@@ -156,8 +148,8 @@ if __name__ == '__main__':
 	def mapper(e,M):
 		# regions
 		lim1 = np.pi - 1 - e
-		if e>0.5:
-			lim2 = 0.5
+		if e>0.55:
+			lim2 = 0.45
 		else:
 			lim2 = 1-e
 		rA = M>lim1
@@ -167,7 +159,7 @@ if __name__ == '__main__':
 		a[rA] += 2
 		a[rB] += 4
 		a[rC] += 6
-		if e>0.5:
+		if e>0.55:
 			a[rC] += 2
 		return a
 
@@ -189,14 +181,16 @@ if __name__ == '__main__':
 	plt.show()
 
 	# Plot values calculated and compare with pre-calculated grid
-	sympy_grid = np.loadtxt('sympy_200x200grid.txt')[1::30,1:-1]
+	sympy_grid = np.loadtxt('../sympy_200x200grid.txt')[1::30,1:-1]
 	M = np.linspace(0,np.pi,200)[1:-1]
 	e = np.arange(0,1,1/200)[1::30]
 	for order in range(1,6):
 		for i in range(len(e)):
+			start = time.time()
 			vals = nijenhuis_method(e[i],M,order)
+			stop = time.time()-start
 			sympy_vals = sympy_grid[i,:]
-			plt.plot(M,vals-sympy_vals,label='e = {}'.format(e[i]))
+			plt.plot(M,vals-sympy_vals,label='e = {} , t = {:.3e}s'.format(e[i],stop))
 		plt.xlabel('$M$')
 		plt.ylabel('$\Delta E$')
 		plt.title('order: $m = {}$'.format(order))

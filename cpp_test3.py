@@ -1,10 +1,10 @@
 if __name__ == '__main__':
 	import numpy as np
 	import matplotlib.pyplot as plt
-	from build.cpp_solvers import *
+	from py_implementations.nijenhuis_solver import *
 	from time import time
 
-	methods = [newton_solver,newton_solver,iterative_solver,goat_herd_solver,nijenhuis_solver,danby_solver,cordic_solver,murison_solver]
+	methods = [nijenhuis_solver]
 
 	e = np.arange(0,1,0.1)
 	M = np.linspace(0,np.pi,1000)
