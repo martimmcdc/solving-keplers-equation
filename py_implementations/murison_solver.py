@@ -35,8 +35,8 @@ def murison_solver(e,M,epsilon=1e-9,iter_counter=False):
     filt = np.ones(len(M),bool)
     counter = 0
     while filt.any():
-        E[filt] -= eps3(e,Mnorm[filt],E[filt].copy())
-        filt[filt] = (E[filt] - e*np.sin(E[filt]) - M[filt])>epsilon
+        E[filt] -= eps3(e,Mnorm[filt],E[filt])
+        filt[filt] = np.abs(E[filt] - e*np.sin(E[filt]) - M[filt]) > epsilon
         counter += 1
     if iter_counter:
         return E,counter
@@ -72,7 +72,7 @@ if __name__=="__main__":
 
 
     # Plot values calculated and compare with pre-calculated grid
-    sympy_grid = np.loadtxt('sympy_200x200grid.txt')[::30,:]
+    sympy_grid = np.loadtxt('../sympy_200x200grid.txt')[::30,:]
     M = np.linspace(0,np.pi,200)
     e = np.arange(0,1,1/200)[::30]
     for power in range(6,16,3):

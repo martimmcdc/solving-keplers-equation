@@ -44,7 +44,7 @@ for i in range(len(methods)):
 	times[i,:,:] = np.loadtxt(fname_times)
 	zeros[i,:,:] = np.loadtxt(fname_zeros)
 times = times[:,1:-1,1:-1]
-errors = np.abs(zeros[:,1:-1,1:-1].copy()- sympy_solutions[1:-1,1:-1]) # error values
+errors = np.abs(zeros[:,1:-1,1:-1].copy() - sympy_solutions[1:-1,1:-1]) # error values
 log10times = np.log10(times+1e-20)  # avoid errors when taking log(times) of times=0
 log10errors = np.log10(errors+1e-20) # avoid errors when taking log(errors) of errors=0
 
