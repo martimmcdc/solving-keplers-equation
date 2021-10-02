@@ -313,6 +313,8 @@ PYBIND11_MODULE(cpp_solvers, module){
         py::arg("e"),py::arg("M"),py::arg("epsilon")=1e-9);
     module.def("nijenhuis_solver", py::vectorize(&nijenhuis_solver), "Nijenhuis' solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("epsilon")=1e-9);
+    module.def("nijenhuis_method", py::vectorize(&nijenhuis_method), "Nijenhuis' solver for Kepler's equation",
+        py::arg("e"),py::arg("M"),py::arg("order")=3);
     module.def("cordic_solver", py::vectorize(&cordic_solver), "CORDIC solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("n")=29);
     module.def("murison_solver", py::vectorize(&murison_solver), "Murison's solver for Kepler's equation",
