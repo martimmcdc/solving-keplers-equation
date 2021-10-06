@@ -303,20 +303,20 @@ double murison_solver(double e, double M, double epsilon=1e-9){
 
 PYBIND11_MODULE(cpp_solvers, module){
     module.doc() = "This module is a C++ implementation of algorithms to solve Keplers equation";
-    module.def("newton_solver", py::vectorize(&newton_solver), "Newton-Raphson solver for Kepler's equation",
+    module.def("newton_solver", &newton_solver, "Newton-Raphson solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("epsilon")=1e-9);
-    module.def("iterative_solver", py::vectorize(&iterative_solver), "Iterative solver for Kepler's equation",
+    module.def("iterative_solver", &iterative_solver, "Iterative solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("epsilon")=1e-9);
-    module.def("goat_herd_solver", py::vectorize(&goat_herd_solver), "Contour integral solver for Kepler's equation",
+    module.def("goat_herd_solver", &goat_herd_solver, "Contour integral solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("N")=10);
-    module.def("danby_solver", py::vectorize(&danby_solver), "Danby's solver for Kepler's equation",
+    module.def("danby_solver", &danby_solver, "Danby's solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("epsilon")=1e-9);
-    module.def("nijenhuis_solver", py::vectorize(&nijenhuis_solver), "Nijenhuis' solver for Kepler's equation",
+    module.def("nijenhuis_solver", &nijenhuis_solver, "Nijenhuis' solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("epsilon")=1e-9);
-    module.def("nijenhuis_method", py::vectorize(&nijenhuis_method), "Nijenhuis' solver for Kepler's equation",
+    module.def("nijenhuis_method", &nijenhuis_method, "Nijenhuis' solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("order")=3);
-    module.def("cordic_solver", py::vectorize(&cordic_solver), "CORDIC solver for Kepler's equation",
+    module.def("cordic_solver", &cordic_solver, "CORDIC solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("n")=29);
-    module.def("murison_solver", py::vectorize(&murison_solver), "Murison's solver for Kepler's equation",
+    module.def("murison_solver", &murison_solver, "Murison's solver for Kepler's equation",
         py::arg("e"),py::arg("M"),py::arg("epsilon")=1e-9);
 }

@@ -8,11 +8,13 @@ if __name__ == '__main__':
 
 	e = np.arange(0,1,0.1)
 	M = np.linspace(0,np.pi,1000)
+	solution = np.empty(M.shape,float)
 
 	for method in methods:
 		start = time()
 		for e_val in e:
-			solution = method(e_val,M)
+			for i in range(len(M)):
+				solution[i] = method(e_val,M[i])
 			plt.plot(M,solution,label='e = '+str(e_val))
 		t = time() - start
 		plt.title(method.__name__+f" (in {round(t,4)}s)")
